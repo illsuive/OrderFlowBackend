@@ -65,8 +65,8 @@
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 
-### Lock-Free Ring Buffer Processing Pipeline (LMAX Disruptor)
-```text
+
+
 [ Incoming HTTP Order ]
              │
              ▼
@@ -94,8 +94,7 @@
                                      └───────────────────────────────┘
 
 
-### Price-Time Priority Double-Auction Engine (OrderBook.java)
-```text
+
 
 OFFER / ASKS (SELLERS) ── Sorted Ascending (Lowest Price First)
                   ┌──────────────────────┬──────────────────────┬───────────────┐
@@ -120,8 +119,7 @@ OFFER / ASKS (SELLERS) ── Sorted Ascending (Lowest Price First)
   • Unfilled passive volume rests on Best Bid tier.   
 
 
-###  Interactive Short Selling & Position PnL Lifecycle
-```text
+
 
 [ User Action: Click "Sell / Short" 10 Units @ $185.00 ]
                            │
