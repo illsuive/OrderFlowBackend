@@ -9,7 +9,7 @@ public class Order {
     private long timestamp;
 
     public Order() {
-        // Default constructor for pre-allocation in object pools / RingBuffer
+        // Default constructor for pre-allocation in object pools / RingBuffer slots
     }
 
     public Order(long orderId, String symbol, Side side, double price, int quantity, long timestamp) {

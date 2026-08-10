@@ -1,4 +1,4 @@
-package com.orderflow.gateway.config;
+package com.orderflow.gateway.websocket;
 
 import java.util.HashMap;
 import java.util.Map;

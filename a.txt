@@ -1,0 +1,61 @@
+orderflow/
+├── pom.xml                                   # Parent POM (Reactor build definition)
+│
+├── orderflow-core/                          # Module 1: Core Matching Engine & Models
+│   ├── pom.xml
+│   └── src/
+│       ├── main/
+│       │   └── java/
+│       │       └── com/
+│       │           └── orderflow/
+│       │               └── core/
+│       │                   ├── disruptor/
+│       │                   │   ├── DisruptorProvider.java         # RingBuffer initialization & event publisher
+│       │                   │   └── MatchingEventHandler.java      # RingBuffer event consumer handler
+│       │                   ├── engine/
+│       │                   │   ├── OrderBook.java                 # Stateful L2 TreeMap / Price-Time matching logic
+│       │                   │   └── MultiSymbolMatchingEngine.java # ConcurrentMap of symbol -> OrderBook
+│       │                   ├── event/
+│       │                   │   ├── OrderEvent.java                # RingBuffer slot payload object
+│       │                   │   └── OrderEventFactory.java         # Pre-allocator for RingBuffer slots
+│       │                   ├── model/
+│       │                   │   ├── Order.java                     # Order entity with populate() mutator
+│       │                   │   ├── OrderBookDepth.java            # Immutable snapshot DTO (bids/asks)
+│       │                   │   └── Side.java                      # Enum: BUY, SELL
+│       │                   └── risk/
+│       │                       └── CoreRiskFilter.java            # In-engine risk & sanity validations
+│       └── test/
+│           └── java/
+│               └── com/
+│                   └── orderflow/
+│                       └── core/
+│                           ├── OrderBookTest.java                 # Execution & matching unit tests
+│                           └── benchmark/
+│                               └── MatchingEngineBenchmark.java   # JMH sub-microsecond latency benchmarks
+│
+└── orderflow-gateway/                       # Module 2: Spring WebFlux Reactive Gateway
+    ├── pom.xml
+    └── src/
+        └── main/
+            ├── java/
+            │   └── com/
+            │       └── orderflow/
+            │           └── gateway/
+            │               ├── OrderFlowApplication.java         # Main Spring Boot entrypoint
+            │               ├── config/
+            │               │   └── WebConfig.java                # CORS policy configuration for Vite (5173)
+            │               ├── controller/
+            │               │   └── OrderController.java          # REST API endpoints (/api/v1/orders)
+            │               ├── dto/
+            │               │   ├── OrderRequest.java             # Inbound JSON request payload DTO
+            │               │   └── OrderResponse.java            # Outbound JSON response DTO
+            │               ├── handler/
+            │               │   └── TradeWebSocketHandler.java    # Reactive WebSocket stream handler
+            │               ├── service/
+            │               │   ├── OrderGatewayService.java      # Routes REST requests into core Disruptor
+            │               │   └── PreTradeRiskService.java      # Gateway-level pre-trade risk checks ($1M cap)
+            │               └── websocket/
+            │                   ├── WebSocketConfig.java          # Maps /ws/trades to TradeWebSocketHandler
+            │                   └── WebSocketPublisher.java       # Broadcasts updated L2 book to web clients
+            └── resources/
+                └── application.yml                               # Netty server configuration (Port 8080)

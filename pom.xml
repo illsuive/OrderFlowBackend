@@ -13,7 +13,6 @@
     <name>OrderFlow Matching Engine</name>
     <description>High-Throughput Lock-Free Matching Gateway</description>
 
-    <!-- Child Modules -->
     <modules>
         <module>orderflow-core</module>
         <module>orderflow-gateway</module>
@@ -25,7 +24,6 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
-        <!-- Dependency Versions -->
         <disruptor.version>4.0.0</disruptor.version>
         <eclipse-collections.version>11.1.0</eclipse-collections.version>
         <spring-boot.version>3.2.3</spring-boot.version>
@@ -34,21 +32,21 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- LMAX Disruptor for lock-free ring buffer -->
+            <!-- LMAX Disruptor -->
             <dependency>
                 <groupId>com.lmax</groupId>
                 <artifactId>disruptor</artifactId>
                 <version>${disruptor.version}</version>
             </dependency>
 
-            <!-- Eclipse Primitive Collections (Zero boxing) -->
+            <!-- Eclipse Primitive Collections -->
             <dependency>
                 <groupId>org.eclipse.collections</groupId>
                 <artifactId>eclipse-collections</artifactId>
                 <version>${eclipse-collections.version}</version>
             </dependency>
 
-            <!-- Spring Boot Dependencies for Gateway -->
+            <!-- Spring Boot Dependencies (Manages WebFlux, Netty, and JUnit 5) -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>

@@ -6,23 +6,34 @@ public class OrderEvent {
     private double price;
     private int quantity;
     private boolean isBuy;
+    private boolean isLimitOrder;
     private long timestamp;
 
+    public void set(long orderId, String symbol, double price, int quantity, boolean isBuy, boolean isLimitOrder, long timestamp) {
+        this.orderId = orderId;
+        this.symbol = symbol;
+        this.price = price;
+        this.quantity = quantity;
+        this.isBuy = isBuy;
+        this.isLimitOrder = isLimitOrder;
+        this.timestamp = timestamp;
+    }
+
     public long getOrderId() { return orderId; }
-    public void setOrderId(long orderId) { this.orderId = orderId; }
-
     public String getSymbol() { return symbol; }
-    public void setSymbol(String symbol) { this.symbol = symbol; }
-
     public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
-
     public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
-
     public boolean isBuy() { return isBuy; }
-    public void setBuy(boolean buy) { isBuy = buy; }
-
+    public boolean isLimitOrder() { return isLimitOrder; }
     public long getTimestamp() { return timestamp; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+
+    public void clear() {
+        this.orderId = 0L;
+        this.symbol = null;
+        this.price = 0.0;
+        this.quantity = 0;
+        this.isBuy = false;
+        this.isLimitOrder = false;
+        this.timestamp = 0L;
+    }
 }

@@ -1,4 +1,4 @@
-package com.orderflow.core.disruptor;
+package com.orderflow.core.event;
 
 import com.lmax.disruptor.EventFactory;
 

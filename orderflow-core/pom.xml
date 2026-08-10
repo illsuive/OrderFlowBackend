@@ -22,13 +22,20 @@
             <artifactId>disruptor</artifactId>
         </dependency>
 
-        <!-- Primitive Collections to prevent GC pauses -->
+        <!-- Primitive Collections -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
         </dependency>
 
-        <!-- JMH Benchmarking (For Latency Audit) -->
+        <!-- Spring Boot Test (Provides JUnit 5 Jupiter engine & assertions) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JMH Benchmarking -->
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>

@@ -1,91 +1,104 @@
 import React, { useRef, useEffect } from 'react';
 import { useOrderStore } from '../store/useOrderStore';
 
-export function OrderBookCanvas() {
+export function OrderBookCanvas({ onSelectPrice }) {
   const canvasRef = useRef(null);
+  const selectedSymbol = useOrderStore((state) => state.selectedSymbol);
   const marketDepth = useOrderStore((state) => state.marketDepth);
+  const currentRate = useOrderStore((state) => state.stockRates[selectedSymbol]?.price || 150.0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
 
-    // Handle high-DPI screens
+    const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
 
-    // Clear Background
-    ctx.fillStyle = '#0F172A'; // Slate 900
+    // Clear Canvas
+    ctx.fillStyle = '#111827';
     ctx.fillRect(0, 0, width, height);
 
+    // Mock depth fallback if WebSocket stream is resting
+    const bids = marketDepth.bids?.length ? marketDepth.bids : [
+      { price: currentRate - 0.2, volume: 150 },
+      { price: currentRate - 0.4, volume: 320 },
+      { price: currentRate - 0.6, volume: 450 },
+      { price: currentRate - 0.8, volume: 600 }
+    ];
+
+    const asks = marketDepth.asks?.length ? marketDepth.asks : [
+      { price: currentRate + 0.2, volume: 120 },
+      { price: currentRate + 0.4, volume: 280 },
+      { price: currentRate + 0.6, volume: 410 },
+      { price: currentRate + 0.8, volume: 590 }
+    ];
+
+    const rowHeight = 30;
     ctx.font = '12px monospace';
-    const rowHeight = 22;
-    const midX = width / 2;
 
-    // Header Titles
-    ctx.fillStyle = '#10B981'; // Green 500
-    ctx.fillText('BIDS (BUY)', 15, 25);
-    ctx.fillStyle = '#64748B';
-    ctx.fillText('PRICE / QTY', 120, 25);
+    // Render Asks (Sells - Top Half)
+    asks.slice(0, 5).reverse().forEach((ask, index) => {
+      const y = index * rowHeight + 10;
+      const barWidth = Math.min(width * 0.5, (ask.volume / 1000) * width);
 
-    ctx.fillStyle = '#EF4444'; // Red 500
-    ctx.fillText('ASKS (SELL)', midX + 15, 25);
-    ctx.fillStyle = '#64748B';
-    ctx.fillText('PRICE / QTY', midX + 120, 25);
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
+      ctx.fillRect(width - barWidth, y, barWidth, rowHeight - 4);
 
-    // Separator Line
-    ctx.strokeStyle = '#334155';
+      ctx.fillStyle = '#ef4444';
+      ctx.fillText(`$${ask.price.toFixed(2)}`, 20, y + 18);
+      ctx.fillStyle = '#9ca3af';
+      ctx.fillText(`${ask.volume} QTY`, width - 90, y + 18);
+    });
+
+    // Spread Line
+    const midY = 165;
+    ctx.strokeStyle = '#374151';
     ctx.beginPath();
-    ctx.moveTo(midX, 10);
-    ctx.lineTo(midX, height - 10);
+    ctx.moveTo(10, midY);
+    ctx.lineTo(width - 10, midY);
     ctx.stroke();
 
-    // Render Bids (Buy Orders)
-    marketDepth.bids?.forEach((bid, i) => {
-      const y = 50 + i * rowHeight;
-      const barWidth = Math.min((bid.volume / 1000) * (midX - 30), midX - 30);
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillText(`MID MARKET: $${currentRate.toFixed(2)}`, width / 2 - 60, midY + 4);
 
-      // Depth bar visualization
+    // Render Bids (Buys - Bottom Half)
+    bids.slice(0, 5).forEach((bid, index) => {
+      const y = midY + 15 + (index * rowHeight);
+      const barWidth = Math.min(width * 0.5, (bid.volume / 1000) * width);
+
       ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
-      ctx.fillRect(0, y - 14, barWidth, 18);
+      ctx.fillRect(width - barWidth, y, barWidth, rowHeight - 4);
 
-      // Text Data
-      ctx.fillStyle = '#34D399';
-      ctx.fillText(`$${bid.price.toFixed(2)}`, 15, y);
-      ctx.fillStyle = '#94A3B8';
-      ctx.fillText(`${bid.volume.toLocaleString()}`, 130, y);
+      ctx.fillStyle = '#10b981';
+      ctx.fillText(`$${bid.price.toFixed(2)}`, 20, y + 18);
+      ctx.fillStyle = '#9ca3af';
+      ctx.fillText(`${bid.volume} QTY`, width - 90, y + 18);
     });
+  }, [marketDepth, currentRate]);
 
-    // Render Asks (Sell Orders)
-    marketDepth.asks?.forEach((ask, i) => {
-      const y = 50 + i * rowHeight;
-      const barWidth = Math.min((ask.volume / 1000) * (midX - 30), midX - 30);
-
-      // Depth bar visualization
-      ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
-      ctx.fillRect(width - barWidth, y - 14, barWidth, 18);
-
-      // Text Data
-      ctx.fillStyle = '#F87171';
-      ctx.fillText(`$${ask.price.toFixed(2)}`, midX + 15, y);
-      ctx.fillStyle = '#94A3B8';
-      ctx.fillText(`${ask.volume.toLocaleString()}`, midX + 130, y);
-    });
-  }, [marketDepth]);
+  const handleCanvasClick = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    
+    // Estimate clicked price tier
+    const row = Math.floor(y / 30);
+    const estimatedPrice = currentRate + ((5 - row) * 0.2);
+    if (onSelectPrice) onSelectPrice(Math.round(estimatedPrice * 100) / 100);
+  };
 
   return (
     <div className="card bg-base-200 border border-base-300 shadow-xl p-4">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="text-sm font-semibold tracking-wide uppercase text-base-content/70">
-          Level 2 Market Depth (100ms Stream)
-        </h3>
-        <span className="badge badge-outline badge-sm font-mono">AAPL</span>
-      </div>
+      <h3 className="text-sm font-mono font-bold mb-3 flex items-center justify-between">
+        <span>L2 MARKET DEPTH ({selectedSymbol})</span>
+        <span className="text-xs text-base-content/50 font-normal">Click level to pre-fill price</span>
+      </h3>
       <canvas
         ref={canvasRef}
-        width={550}
-        height={320}
-        className="w-full rounded-lg border border-slate-800"
+        width={480}
+        height={340}
+        onClick={handleCanvasClick}
+        className="w-full bg-base-300 rounded-lg cursor-pointer border border-base-300"
       />
     </div>
   );

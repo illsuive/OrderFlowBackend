@@ -1,8 +1,11 @@
 package com.orderflow.core.engine;
 
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.orderflow.core.model.Order;
 import com.orderflow.core.model.OrderBookDepth;
-import java.util.concurrent.ConcurrentHashMap;
+import com.orderflow.core.risk.CoreRiskFilter;
 
 public class MultiSymbolMatchingEngine {
 
@@ -10,6 +13,11 @@ public class MultiSymbolMatchingEngine {
 
     public void processOrder(Order order) {
         if (order == null || order.getSymbol() == null) return;
+
+        // Microsecond pre-execution risk check
+        if (!CoreRiskFilter.validate(order)) {
+            return;
+        }
 
         String symbol = order.getSymbol().toUpperCase();
         OrderBook book = orderBooks.computeIfAbsent(symbol, OrderBook::new);
@@ -24,6 +32,8 @@ public class MultiSymbolMatchingEngine {
 
     public OrderBookDepth getDepthSnapshot(String symbol) {
         OrderBook book = getOrderBook(symbol);
-        return (book != null) ? book.getDepthSnapshot() : new OrderBookDepth(symbol, java.util.Collections.emptyList(), java.util.Collections.emptyList());
+        return (book != null) 
+                ? book.getDepthSnapshot() 
+                : new OrderBookDepth(symbol, Collections.emptyList(), Collections.emptyList());
     }
 }

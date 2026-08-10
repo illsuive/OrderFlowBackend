@@ -1,53 +1,59 @@
 package com.orderflow.core;
 
-import com.orderflow.core.engine.OrderBook;
+import com.orderflow.core.engine.MultiSymbolMatchingEngine;
 import com.orderflow.core.model.Order;
 import com.orderflow.core.model.Side;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-@BenchmarkMode({Mode.Throughput, Mode.AverageTime})
-@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Thread)
-@Warmup(iterations = 3, time = 1)
-@Measurement(iterations = 5, time = 2)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@Warmup(iterations = 2, time = 1)
+@Measurement(iterations = 3, time = 1)
 @Fork(1)
 public class OrderBookBenchmark {
 
-    private OrderBook orderBook;
-    private Order[] preAllocatedOrders;
-    private int index = 0;
-    private static final int NUM_ORDERS = 10_000;
+    private MultiSymbolMatchingEngine engine;
+    private Random random;
+    private long orderId;
 
-    @Setup(Level.Trial)
+    @Setup
     public void setup() {
-        orderBook = new OrderBook("AAPL");
-        preAllocatedOrders = new Order[NUM_ORDERS];
-        Random random = new Random(42);
-
-        // Pre-allocate orders to eliminate garbage collection impact during benchmarking
-        for (int i = 0; i < NUM_ORDERS; i++) {
-            Order order = new Order();
-            Side side = (i % 2 == 0) ? Side.BUY : Side.SELL;
-            double price = 150.0 + (random.nextDouble() * 10 - 5); // Price around 150.0
-            int qty = random.nextInt(100) + 1;
-            
-            order.populate(i, side, price, qty, System.nanoTime());
-            preAllocatedOrders[i] = order;
-        }
+        engine = new MultiSymbolMatchingEngine();
+        random = new Random(42);
+        orderId = 1L;
     }
 
     @Benchmark
-    public void testOrderMatchingLatency() {
-        Order order = preAllocatedOrders[index];
-        orderBook.processOrder(order);
+    public void testOrderInsertion() {
+        double price = 150.0 + (random.nextInt(20) * 0.5);
+        Side side = random.nextBoolean() ? Side.BUY : Side.SELL;
         
-        index = (index + 1) % NUM_ORDERS;
+        Order order = new Order();
+        order.populate(
+            orderId++,
+            "AAPL",
+            side,
+            price,
+            100,
+            System.currentTimeMillis()
+        );
+
+        engine.processOrder(order);
     }
 
-    public static void main(String[] args) throws Exception {
-        org.openjdk.jmh.Main.main(args);
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()
+                .include(OrderBookBenchmark.class.getSimpleName())
+                .build();
+
+        new Runner(opt).run();
     }
 }

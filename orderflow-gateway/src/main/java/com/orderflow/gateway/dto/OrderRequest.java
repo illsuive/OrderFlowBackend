@@ -17,8 +17,8 @@ public class OrderRequest {
     public void setQuantity(int quantity) { this.quantity = quantity; }
 
     public boolean isBuy() { return isBuy; }
-    public void setBuy(boolean buy) { isBuy = buy; }
+    public void setBuy(boolean buy) { this.isBuy = buy; }
 
     public boolean isLimitOrder() { return isLimitOrder; }
-    public void setLimitOrder(boolean limitOrder) { isLimitOrder = limitOrder; }
+    public void setLimitOrder(boolean limitOrder) { this.isLimitOrder = limitOrder; }
 }
