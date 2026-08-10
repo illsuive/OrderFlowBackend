@@ -1,0 +1,13 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: orderflow-gateway
+  main:
+    web-application-type: reactive
+
+logging:
+  level:
+    root: INFO
+    com.orderflow: DEBUG
